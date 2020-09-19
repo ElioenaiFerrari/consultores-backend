@@ -15,7 +15,7 @@ function auth(req = request, res = response, next) {
       return authorization.split(' ')[1];
     }
 
-    const setAuth = (req) => (user) => (req.auth = user);
+    const setAuth = (req) => (user) => (req.auth = user.token);
     pipe(checkCredentials, verify, setAuth(req))(req.headers);
 
     return next();

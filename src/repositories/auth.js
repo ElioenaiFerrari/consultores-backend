@@ -7,6 +7,7 @@ const {
   created,
   badRequest,
   forbidden,
+  notFound,
 } = require('@/utils/responseHandle');
 const { check, sign } = require('@/utils/auth');
 
@@ -29,13 +30,13 @@ module.exports = {
           return forbidden(res)(errors.auth.invalidCredentials);
         };
       }
-
+      const genToken = (token) => sign({ token });
       const sendToken = (res) => (token) => ok(res)({ token });
 
-      User.findOne({ email })
+      User.findOne({ where: { email } })
         .then(verifyIfUserExists)
         .then(checkCredentials(password))
-        .then(sign)
+        .then(genToken)
         .then(sendToken(res))
         .catch(badRequest(res));
     } catch (error) {
@@ -56,7 +57,7 @@ module.exports = {
 
       const createUser = (params) => User.create(params);
 
-      User.findOne({ email })
+      User.findOne({ where: { email } })
         .then(verifyIfEmailAlreadyInUse)
         .then(createUser)
         .then(created(res))

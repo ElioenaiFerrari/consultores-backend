@@ -12,19 +12,37 @@ const configs = {
 
       const connection = (config) => new Sequelize(config);
 
-      function connectModels(models) {
-        return function (sequelize) {
-          return map(function (model) {
-            model.init(sequelize);
+      const initModel = (sequelize) => (model) => {
+        model.init(sequelize);
 
-            if (model.associations) {
-              model.associations(sequelize.models);
-            }
-          })(models);
-        };
-      }
+        return sequelize;
+      };
 
-      pipe(connection, connectModels(Object.values(models)))(dbConfig);
+      const initModels = (models) => (sequelize) => {
+        map(initModel(sequelize))(models);
+
+        return sequelize;
+      };
+
+      const associateModel = (sequelize) => (model) => {
+        if (model.associate) {
+          model.associate(sequelize.models);
+        }
+
+        return sequelize;
+      };
+
+      const associateModels = (models) => (sequelize) => {
+        map(associateModel(sequelize))(models);
+
+        return sequelize;
+      };
+
+      pipe(
+        connection,
+        initModels(Object.values(models)),
+        associateModels(Object.values(models))
+      )(dbConfig);
 
       return connection;
     },

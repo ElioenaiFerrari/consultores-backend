@@ -4,23 +4,35 @@ const timestamps = require('@/utils/timestamps');
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    return queryInterface.createTable('users', {
+    return queryInterface.createTable('credit_cards', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
         allowNull: false,
       },
-      name: {
-        type: Sequelize.STRING,
+      vendor_id: {
+        type: Sequelize.INTEGER,
         allowNull: false,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
       },
-      email: {
+      number: {
         type: Sequelize.STRING,
         allowNull: false,
         unique: true,
       },
-      password: {
+      holder: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      cvv: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      validity: {
         type: Sequelize.STRING,
         allowNull: false,
       },
@@ -29,6 +41,6 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('users');
+    return queryInterface.dropTable('credit_cards');
   },
 };

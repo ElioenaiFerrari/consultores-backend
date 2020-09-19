@@ -1,32 +1,35 @@
-require('dotenv/config');
 require('module-alias/register');
 const { hashPassword } = require('@/utils/auth');
-const { makeSchema, makeModel } = require('@/utils/mongo');
-const { pipe } = require('@/utils/tools');
+const { Model, DataTypes } = require('sequelize');
 
-const schema = makeSchema({
-  name: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-});
+class User extends Model {
+  static init(sequelize) {
+    super.init(
+      {
+        name: DataTypes.STRING,
+        email: DataTypes.STRING,
+        password: DataTypes.STRING,
+      },
+      {
+        sequelize,
+        hooks: {
+          beforeSave(user) {
+            user.password = hashPassword(user.password);
+          },
+        },
+      }
+    );
+  }
 
-schema.pre('save', function (next) {
-  const updatePassword = (hash) => this.set('password', hash);
-  const save = () => this.save();
-  pipe(hashPassword, updatePassword, save)(this.get('password'));
+  static associate({ Product, Wallet, CreditCard, Sale }) {
+    this.hasMany(Product, { as: 'products', foreignKey: 'vendor_id' });
+    this.hasOne(Wallet, { as: 'wallet', foreignKey: 'vendor_id' });
+    this.hasMany(CreditCard, { as: 'credit_cards', foreignKey: 'vendor_id' });
+    this.hasMany(Sale, {
+      as: 'sales',
+      foreignKey: 'from_id',
+    });
+  }
+}
 
-  next();
-});
-
-module.exports = makeModel('User')(schema);
+module.exports = User;

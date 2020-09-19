@@ -39,6 +39,7 @@
     "delete": "pm2 delete all",
     "logs": "pm2 logs",
     "ls": "pm2 ls",
-    "test": "jest"
+    "test": "jest",
+    "db_reset": "sequelize db:drop && sequelize db:create && sequelize db:migrate"
   }
 }
